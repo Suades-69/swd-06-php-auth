@@ -78,8 +78,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     session_regenerate_id(true);
+    unset($_SESSION['_csrf_token'], $_SESSION['intended_url']);
     $_SESSION['user_id'] = db()->lastInsertId();
     $_SESSION['user_name'] = $name;
+    $_SESSION['role'] = 'user';
+    $_SESSION['last_activity'] = time();
+    $lastLogin = db()->prepare('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = :id');
+    $lastLogin->execute(['id' => $_SESSION['user_id']]);
     flash('success', 'Your account has been created.');
     redirect('dashboard.php');
 }

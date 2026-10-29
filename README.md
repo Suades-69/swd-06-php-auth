@@ -8,6 +8,12 @@
 
 Set `APP_ENV=production` in production so PHP errors are not displayed to visitors. Use HTTPS in production; the session cookie is marked `Secure` automatically when PHP detects HTTPS.
 
+## Existing Stage 1 database
+
+The updated `schema.sql` includes the role and last-login columns for fresh installs. If you already created the earlier Stage 1 tables, run `stage2-migration.sql` once before using the login and dashboard. Do not run that migration again after it has succeeded.
+
+The login form uses the same generic message, “Invalid email or password,” for either failure. Identifying which value was wrong would help attackers discover valid accounts and target them with password guesses. The login flow also rehashes passwords when PHP recommends an updated hash, and authenticated sessions expire after 30 minutes without activity.
+
 ## Password storage
 
 The application stores only the one-way hash returned by `password_hash()` with `PASSWORD_DEFAULT`, never the submitted password. `password_verify()` can later validate a login attempt against that hash. Modern password-hashing algorithms use salts and are deliberately expensive to compute, which makes large-scale guessing more difficult if the database is exposed.

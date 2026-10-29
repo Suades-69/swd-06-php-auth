@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
-if (!isset($_SESSION['user_id'], $_SESSION['user_name'])) {
-    redirect('register.php');
-}
+require_login();
+$user = current_user();
 
 $successMessage = flash('success');
 ?>
@@ -24,8 +23,36 @@ $successMessage = flash('success');
             <p class="success" role="status"><?= e($successMessage) ?></p>
         <?php endif; ?>
         <p class="eyebrow">SWD AUTH</p>
-        <h1 id="page-title">Welcome, <?= e($_SESSION['user_name']) ?></h1>
-        <p class="intro">You are signed in.</p>
+        <h1 id="page-title">Welcome, <?= e($user['name']) ?></h1>
+        <p class="intro">You are signed in. Your account details are below.</p>
+
+        <dl class="account-details">
+            <div>
+                <dt>Name</dt>
+                <dd><?= e($user['name']) ?></dd>
+            </div>
+            <div>
+                <dt>Email</dt>
+                <dd><?= e($user['email']) ?></dd>
+            </div>
+            <div>
+                <dt>Role</dt>
+                <dd><?= e($user['role']) ?></dd>
+            </div>
+            <div>
+                <dt>Member since</dt>
+                <dd><?= e($user['created_at']) ?></dd>
+            </div>
+            <div>
+                <dt>Last login</dt>
+                <dd><?= e($user['last_login_at'] ?? 'Not recorded') ?></dd>
+            </div>
+        </dl>
+
+        <form action="logout.php" method="post">
+            <?= csrf_field() ?>
+            <button type="submit">Log out</button>
+        </form>
     </section>
 </main>
 </body>

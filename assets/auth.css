@@ -135,8 +135,42 @@ button:hover {
     color: #176b3a;
 }
 
+.account-details {
+    display: grid;
+    gap: 14px;
+    margin: 0 0 22px;
+}
+
+.account-details div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.account-details dt {
+    color: #667085;
+    font-size: 0.9rem;
+}
+
+.account-details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    text-align: right;
+}
+
 @media (max-width: 480px) {
     .auth-card {
         padding: 28px 22px;
+    }
+
+    .account-details div {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .account-details dd {
+        text-align: left;
     }
 }
