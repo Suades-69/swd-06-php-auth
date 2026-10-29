@@ -17,6 +17,7 @@ $successMessage = flash('success');
     <link rel="stylesheet" href="assets/auth.css">
 </head>
 <body>
+<?= navbar_html($user) ?>
 <main class="auth-shell">
     <section class="auth-card" aria-labelledby="page-title">
         <?php if (is_string($successMessage)): ?>

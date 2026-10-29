@@ -19,6 +19,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ? $_POST['password']
         : '';
 
+    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '';
+
+    // Throttle: block if >= 5 failures for this email/IP in the last 15 minutes.
+    if (strlen($email) <= 254 && filter_var($email, FILTER_VALIDATE_EMAIL) !== false) {
+        $attemptCount = db()->prepare(
+            'SELECT COUNT(*)
+             FROM login_attempts
+             WHERE attempted_at >= (NOW() - INTERVAL 15 MINUTE)
+               AND (email = :email OR ip = :ip)'
+        );
+        $attemptCount->execute(['email' => $email, 'ip' => $ipAddress]);
+        $failures = (int) $attemptCount->fetchColumn();
+
+        if ($failures >= 5) {
+            $oldestAttempt = db()->prepare(
+                'SELECT MIN(attempted_at) FROM login_attempts
+                 WHERE attempted_at >= (NOW() - INTERVAL 15 MINUTE)
+                   AND (email = :email OR ip = :ip)'
+            );
+            $oldestAttempt->execute(['email' => $email, 'ip' => $ipAddress]);
+            $oldest = $oldestAttempt->fetchColumn();
+            $minutesLeft = 15 - (int) floor((time() - strtotime((string) $oldest)) / 60);
+            $minutesLeft = max(1, min(15, $minutesLeft));
+            flash('errors', ["Too many attempts, try again in {$minutesLeft} minutes."]);
+            redirect('login.php');
+        }
+    }
+
     $user = null;
     if (strlen($email) <= 254 && filter_var($email, FILTER_VALIDATE_EMAIL) !== false) {
         $statement = db()->prepare(
@@ -39,9 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         && password_verify($password, $passwordHash);
 
     if (!is_array($user) || !$passwordIsValid) {
+        $recordAttempt = db()->prepare('INSERT INTO login_attempts (email, ip) VALUES (:email, :ip)');
+        $recordAttempt->execute(['email' => $email, 'ip' => $ipAddress]);
         flash('errors', ['Invalid email or password.']);
         redirect('login.php');
     }
+
+    // Success — clear failed attempts for this email and IP.
+    $clearAttempts = db()->prepare('DELETE FROM login_attempts WHERE email = :email OR ip = :ip');
+    $clearAttempts->execute(['email' => $email, 'ip' => $ipAddress]);
 
     if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
         $newPasswordHash = password_hash($password, PASSWORD_DEFAULT);

@@ -59,7 +59,28 @@ function require_role(string $role): void
 
     if ($user['role'] !== $role) {
         http_response_code(403);
-        exit('Forbidden');
+        ?>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Forbidden</title>
+    <link rel="stylesheet" href="assets/auth.css">
+</head>
+<body>
+<main class="auth-shell">
+    <section class="auth-card" aria-labelledby="page-title">
+        <p class="eyebrow">SWD AUTH</p>
+        <h1 id="page-title">403 — Forbidden</h1>
+        <p class="intro">You don't have permission to view this page. If you think you should have access, contact an administrator.</p>
+        <a href="dashboard.php">← Back to dashboard</a>
+    </section>
+</main>
+</body>
+</html>
+        <?php
+        exit;
     }
 }
 
@@ -85,6 +106,22 @@ function is_valid_intended_url(mixed $url): bool
     return str_starts_with($path, '/')
         && !str_starts_with($path, '//')
         && !str_contains($path, '\\');
+}
+
+function navbar_html(array $user): void
+{
+    $isAdmin = $user['role'] === 'admin';
+    ?>
+<nav class="navbar">
+    <span class="navbar-brand">SWD AUTH</span>
+    <div class="navbar-links">
+        <a href="dashboard.php">Dashboard</a>
+        <?php if ($isAdmin): ?>
+            <a href="admin/users.php">Admin</a>
+        <?php endif; ?>
+    </div>
+</nav>
+    <?php
 }
 
 function enforce_idle_timeout(): void
