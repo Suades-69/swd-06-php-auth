@@ -116,6 +116,7 @@ function navbar_html(array $user): void
     <span class="navbar-brand">SWD AUTH</span>
     <div class="navbar-links">
         <a href="dashboard.php">Dashboard</a>
+        <a href="profile.php">Profile</a>
         <?php if ($isAdmin): ?>
             <a href="admin/users.php">Admin</a>
         <?php endif; ?>
